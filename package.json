@@ -1,0 +1,26 @@
+{
+  "name": "sails-hook-jsonapi",
+  "version": "0.0.1",
+  "description": "A Sails.js hook for creating an API which conforms to JSON API specifications per jsonapi.org",
+  "main": "index.js",
+  "sails": {
+    "isHook": true
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sails",
+    "jsonapi",
+    "sails-hook",
+    "api",
+    "ember-data"
+  ],
+  "author": "Ian VanSchooten",
+  "license": "MIT",
+  "dependencies": {
+    "jsonapi-serializer": "^1.0.4",
+    "pluralize": "^1.1.2",
+    "sails-build-dictionary": "^0.10.1"
+  }
+}
