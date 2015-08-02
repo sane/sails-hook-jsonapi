@@ -22,5 +22,11 @@
     "jsonapi-serializer": "^1.0.4",
     "pluralize": "^1.1.2",
     "sails-build-dictionary": "^0.10.1"
+  },
+  "devDependencies": {
+    "barrels": "^1.5.0",
+    "sails": "^0.11.0",
+    "sails-memory": "^0.10.5",
+    "tape": "^4.0.1"
   }
 }
