@@ -7,7 +7,9 @@
     "isHook": true
   },
   "scripts": {
-    "test": "tape tests/responses/*.js"
+    "test": "tape tests/responses/*.js",
+    "lint": "eslint lib/",
+    "pretest": "npm run lint"
   },
   "keywords": [
     "sails",
@@ -25,6 +27,10 @@
   },
   "devDependencies": {
     "barrels": "^1.5.0",
+    "eslint": "^1.0.0",
+    "eslint-config-ianvs": "^0.0.3",
+    "eslint-config-standard": "^4.0.0-5",
+    "eslint-plugin-standard": "^1.1.0",
     "sails": "^0.11.0",
     "sails-memory": "^0.10.5",
     "tape": "^4.0.1"
