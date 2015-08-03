@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "tape tests/responses/*.js",
-    "lint": "eslint lib/",
+    "lint": "eslint lib/ tests/responses/",
     "pretest": "npm run lint"
   },
   "keywords": [
