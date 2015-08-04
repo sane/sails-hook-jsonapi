@@ -5,7 +5,7 @@
 let Barrels = require('barrels');
 let path = require('path');
 let Sails = require('sails').Sails;
-let test = require('tape');
+let test = require('tape-catch');
 let loadConfig = require('../helpers/load-config');
 let fixtures,
     sails;
