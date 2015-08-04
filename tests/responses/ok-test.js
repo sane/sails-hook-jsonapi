@@ -1,5 +1,4 @@
 /* global User, Author, Book */
-
 'use strict';
 
 let Barrels = require('barrels');
@@ -105,7 +104,28 @@ test('Returns correct attributes', function (t) {
 
 });
 
-test('Returns correct relationships', function (t) {
+test('Returns correct nested resources', function (t) {
+  t.plan(3);
+
+  sails.request({
+    url   : '/author',
+    method: 'GET',
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.ok(body.data[0].attributes.books, '"attributes" contains a "books" property');
+      t.equal(typeof body.data[0].attributes.books, 'object', '"books" is an object');
+      t.deepEqual(body.data[0].attributes.books[0].title, 'A Game of Thrones', '"title" of first book is "A Game of Thrones"');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test.skip('Returns relationships for compound document', function (t) {
   t.plan(4);
 
   sails.request({
