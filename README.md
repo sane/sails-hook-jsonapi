@@ -1,6 +1,8 @@
+<p align="center"><img src="/../images/sails.png?raw=true" height="80"/><img src="/../images/jsonapi.png?raw=true" height="80"/></p>
+
 # sails-hook-jsonapi
 
-[Sails JS](http://sailsjs.org) hook for creating an API which conforms to JSON API specifications per jsonapi.org.
+This is a [Sails JS](http://sailsjs.org) hook for creating an API which conforms to JSON API specifications per jsonapi.org.
 
 ### Installation
 
@@ -9,7 +11,7 @@
 ### Usage
 *requires at least sails >= 0.11*
 
-Just lift your app as normal, and your api responses will be formatted in accordance with [jsonapi.org](http://jsonapi.org/format/)
+Just lift your app as normal, and your api responses will be formatted in accordance with [jsonapi.org](http://jsonapi.org/format/).
 
 #### Options
 Create a `jsonapi.js` file inside the `config/` directory of your app, and you can set the following options:
