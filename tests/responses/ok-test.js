@@ -107,6 +107,8 @@ test('Returns correct attributes', function (t) {
 test('Returns correct nested resources', function (t) {
   t.plan(3);
 
+  sails.config.jsonapi.compoundDoc = false;
+
   sails.request({
     url   : '/author',
     method: 'GET',
@@ -125,8 +127,10 @@ test('Returns correct nested resources', function (t) {
   });
 });
 
-test.skip('Returns relationships for compound document', function (t) {
+test('Returns relationships for compound document', function (t) {
   t.plan(4);
+
+  sails.config.jsonapi.compoundDoc = true;
 
   sails.request({
     url   : '/author',
@@ -136,16 +140,67 @@ test.skip('Returns relationships for compound document', function (t) {
       t.fail(err);
     }
     try {
-      t.ok(body.data.relationships, 'Body contains a "relationships" property');
-      t.ok(body.data.relationships.books, 'Relationships contains a "books" property');
-      t.ok(body.data.relationships.books[0].data, 'Relationships contains a "books" property');
-      t.equal(body.data.relationships.books[0].data.type, 'books', '"type" of first book is "books"');
+      t.ok(body.data[0].relationships, 'Body contains a "relationships" property');
+      t.ok(body.data[0].relationships.books, 'Relationships contains a "books" property');
+      t.ok(body.data[0].relationships.books.data, 'Relationships contains a "books" property');
+      t.equal(body.data[0].relationships.books.data[0].type, 'books', '"type" of first book is "books"');
     } catch (err) {
       t.fail(err);
     }
     t.end();
   });
+});
 
+test('Returns included data', function (t) {
+  t.plan(8);
+
+  sails.config.jsonapi.compoundDoc = true;
+  sails.config.jsonapi.included = true;
+
+  sails.request({
+    url   : '/author',
+    method: 'GET',
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.ok(body.included, 'Body contains an "included" property');
+      t.equal(body.included.length, 3, 'Three books are included');
+      t.ok(body.included[0].type, '"included" contains a "type" property');
+      t.equal(body.included[0].type, 'books', '"type" of included is "books"');
+      t.ok(body.included[0].id, 'Included data includes an "id" property');
+      t.ok(body.included[0].attributes, 'Included data includes an "attributes" property');
+      t.equal(typeof body.included[0].attributes, 'object', '"attributes" is an object');
+      t.equal(body.included[0].attributes.title, 'A Game of Thrones', 'Title of first book is "A Game of Thrones"');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Does not return included data if "included = false"', function (t) {
+  t.plan(2);
+
+  sails.config.jsonapi.compoundDoc = true;
+  sails.config.jsonapi.included = false;
+
+  sails.request({
+    url   : '/author',
+    method: 'GET',
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.notOk(body.included, 'Body does not contain an "included" property');
+      t.ok(body.data[0].relationships, 'But it still has a "relationships" property (compound doc)');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
 });
 
 test('Teardown', function (t) {
