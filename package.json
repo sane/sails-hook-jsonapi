@@ -28,7 +28,7 @@
   "devDependencies": {
     "barrels": "^1.5.0",
     "eslint": "^1.0.0",
-    "eslint-config-ianvs": "^0.0.4",
+    "eslint-config-ianvs": "^0.0.6",
     "eslint-config-standard": "^4.0.0",
     "eslint-plugin-standard": "^1.1.0",
     "sails": "^0.11.0",
