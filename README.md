@@ -4,6 +4,8 @@
 
 This is a [Sails JS](http://sailsjs.org) hook for creating an API which conforms to JSON API specifications per jsonapi.org.
 
+*Note*: This project is still in development, and is not yet fully functional. 
+
 ### Installation
 
 `npm install sails-hook-jsonapi`
