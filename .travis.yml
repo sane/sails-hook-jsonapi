@@ -5,6 +5,8 @@ node_js:
 
 before_script:
   - "npm i -g eslint"
+  - "npm i -g npm@3"
+  - "cd ./tests/dummy npm i"
 
 script:
   - "npm test"
