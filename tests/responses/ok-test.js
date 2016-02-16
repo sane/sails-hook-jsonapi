@@ -101,7 +101,6 @@ test('Returns correct attributes', function (t) {
     }
     t.end();
   });
-
 });
 
 test('Returns correct nested resources', function (t) {
