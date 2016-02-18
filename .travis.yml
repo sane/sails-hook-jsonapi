@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+  - "5"
+  - "4"
+  - "0.12"
+before_script:
+  - "cd ./tests/dummy npm i"
+script:
+  - "npm test"

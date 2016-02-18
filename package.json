@@ -9,7 +9,8 @@
   "scripts": {
     "test": "tape tests/responses/*.js | tap-spec",
     "lint": "eslint lib/ tests/responses/",
-    "pretest": "npm run lint"
+    "pretest": "npm run lint",
+    "postinstall": "cd ./tests/dummy && npm i"
   },
   "keywords": [
     "sails",
@@ -28,17 +29,19 @@
     "url": "https://github.com/IanVS/sails-hook-jsonapi"
   },
   "dependencies": {
-    "jsonapi-serializer": "SeyZ/jsonapi-serializer#2.0.0-beta.1",
+    "jsonapi-serializer": "^2.0.4",
+    "lodash": "^4.5.0",
     "pluralize": "^1.1.2",
     "sails-build-dictionary": "^0.10.1"
   },
   "devDependencies": {
     "barrels": "^1.5.0",
-    "eslint": "^1.0.0",
+    "eslint": "^1.10.3",
     "eslint-config-ianvs": "^0.0.6",
-    "eslint-config-standard": "^4.0.0",
+    "eslint-config-standard": "^4.4.0",
+    "eslint-plugin-promise": "^1.0.8",
     "eslint-plugin-standard": "^1.1.0",
-    "sails": "^0.11.0",
+    "sails": "^0.12.1",
     "sails-memory": "^0.10.5",
     "tap-spec": "^4.0.2",
     "tape": "^4.0.1",

@@ -1,6 +1,6 @@
 'use strict';
 
-let path = require('path');
+var path = require('path');
 
 module.exports = {
   appPath: path.join(process.cwd(), 'tests/dummy'),
