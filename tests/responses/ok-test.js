@@ -1,12 +1,13 @@
 /* global User, Author, Book */
 'use strict';
 
-let Barrels = require('barrels');
-let path = require('path');
-let Sails = require('sails').Sails;
-let test = require('tape-catch');
-let loadConfig = require('../helpers/load-config');
-let fixtures,
+var Barrels = require('barrels');
+var path = require('path');
+var Sails = require('sails').Sails;
+var test = require('tape-catch');
+var loadConfig = require('../helpers/load-config');
+var fixtures,
+    barrels,
     sails;
 
 test('Sails does not crash', function (t) {
@@ -16,7 +17,7 @@ test('Sails does not crash', function (t) {
       t.fail(err);
     }
     sails = _sails;
-    let barrels = new Barrels(path.join(process.cwd(), '/tests/fixtures'));
+    barrels = new Barrels(path.join(process.cwd(), '/tests/fixtures'));
     fixtures = barrels.data;
     barrels.populate(function (err) {
       if (err) {
