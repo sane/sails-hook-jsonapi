@@ -9,7 +9,8 @@
   "scripts": {
     "test": "tape tests/responses/*.js | tap-spec",
     "lint": "eslint lib/ tests/responses/",
-    "pretest": "npm run lint"
+    "pretest": "npm run lint",
+    "postinstall": "cd ./tests/dummy && npm i"
   },
   "keywords": [
     "sails",
