@@ -1,7 +1,7 @@
 <p align="center"><img src="/../images/sails.png?raw=true" height="80"/><img src="/../images/jsonapi.png?raw=true" height="80"/></p>
 
 # sails-hook-jsonapi
-[![Build Status](https://travis-ci.org/IanVS/sails-hook-jsonapi.svg?branch=master)](https://travis-ci.org/listepo/sails-hook-jsonapi)
+[![Build Status](https://travis-ci.org/IanVS/sails-hook-jsonapi.svg?branch=master)](https://travis-ci.org/IanVS/sails-hook-jsonapi)
 [![Dependency Status](https://david-dm.org/IanVS/sails-hook-jsonapi.svg)](https://david-dm.org/IanVS/sails-hook-jsonapi)
 [![devDependency Status](https://david-dm.org/IanVS/sails-hook-jsonapi/dev-status.svg)](https://david-dm.org/IanVS/sails-hook-jsonapi#info=devDependencies)
 
