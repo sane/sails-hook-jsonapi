@@ -31,7 +31,7 @@ Create a `jsonapi.js` file inside the `config/` directory of your app, and you c
 
 ### Known Limitations
 
-This is still a project-in-work.  So far, the following are not yet implemented:
+This is unfinished.  So far, the following are not yet implemented:
 
 - [ ] Included request parameter handling (400 response if present)
 - [ ] Links
@@ -45,4 +45,4 @@ This is still a project-in-work.  So far, the following are not yet implemented:
   - [ ] Non-dasherized attributes
 - [ ] Sparse fieldsets
 
-There may be more.  Please submit issue reports.
+There may be more.  Please submit issue reports.  Or better yet, pull requests.  In all honesty, I've stopped using Sails for the time being, and I am no longer activly developing this library.  If anyone is interested in taking it over, let's talk.
