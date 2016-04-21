@@ -10,5 +10,10 @@ module.exports = [
     "id": 2,
     "firstName": "First",
     "lastName": "Last",
+  },
+  {
+     "id": 3,
+     "firstName": "John",
+     "lastName": "Last"
   }
 ]

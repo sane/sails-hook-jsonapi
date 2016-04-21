@@ -98,7 +98,7 @@ test('Returns correct attributes', function (t) {
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
       t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.data, 'Body contains a "data" property');
-      t.equal(body.data.length, 2, 'There are two user objects');
+      t.equal(body.data.length, 3, 'There are three user objects');
       t.equal(body.data[0].id, '1', 'First model id is 1');
       t.equal(body.data[0].type, 'users', 'First model type is "users"');
       t.ok(body.data[0].attributes, '"data" contains an "attributes" property');
@@ -225,6 +225,35 @@ test('Does not return included data if "included = false"', function (t) {
 /*
  * not supported yet
  *
+test('Support sorting', function (t) {
+  t.plan(4);
+
+  sails.request({
+    url   : '/user',
+    data  : {sort: 'lastName,firstName'},
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.deepEqual(
+        body.data.map(function (d) {
+          return d.id;
+        }),
+        ['2', '3', '1'],
+        'Data is in correct order'
+      );
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
 test('Supports fetching relationships', function (t) {
   t.plan(2);
 
