@@ -251,9 +251,6 @@ test('Support simple sorting', function (t) {
   });
 });
 
-/*
- * not supported yet
- *
 test('Support descending sorting', function (t) {
   t.plan(4);
 
@@ -312,6 +309,9 @@ test('Support sorting by multiple fields', function (t) {
   });
 });
 
+/*
+ * not supported yet
+ *
 test('Supports fetching relationships', function (t) {
   t.plan(2);
 
@@ -338,8 +338,7 @@ test('Supports fetching relationships', function (t) {
  * JSON API is agnostic about the strategies supported by a server.
  * The filter query parameter can be used as the basis for any number of filtering strategies.
  * Assuming waterline criteria object.
- *
- * Not supported yet since Sails.js expects query parameter to be 'where'.
+ */
 test('Supports filter', function (t) {
   t.plan(5);
 
@@ -367,7 +366,6 @@ test('Supports filter', function (t) {
     t.end();
   });
 });
- */
 
 test('Not found response is correct', function (t) {
   t.plan(2);

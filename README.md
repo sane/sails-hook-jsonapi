@@ -45,7 +45,5 @@ This is unfinished.  So far, the following are not yet implemented:
   - [ ] Non-dasherized attributes
 - [ ] Sparse fieldsets
 - [ ] Fetching relationships
-- [ ] Descending sorting and sorting by multiple fields
-- [ ] Filter
 
 There may be more.  Please submit issue reports.  Or better yet, pull requests.  In all honesty, I've stopped using Sails for the time being, and I am no longer activly developing this library.  If anyone is interested in taking it over, let's talk.
