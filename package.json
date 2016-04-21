@@ -35,6 +35,7 @@
     "sails-build-dictionary": "^0.10.1"
   },
   "devDependencies": {
+    "ajv": "^4.0.2",
     "barrels": "^1.5.0",
     "eslint": "^1.10.3",
     "eslint-config-ianvs": "^0.0.6",

@@ -6,6 +6,10 @@ var path = require('path');
 var Sails = require('sails').Sails;
 var test = require('tape-catch');
 var loadConfig = require('../helpers/load-config');
+var jsonApiSchema = JSON.parse(
+      require('fs').readFileSync('tests/jsonapi.schema', 'utf8')
+    );
+var validateJsonApi = require('ajv')().compile(jsonApiSchema);
 var fixtures,
     barrels,
     sails;
@@ -80,7 +84,7 @@ test('Book model and fixture is loaded correctly', function (t) {
 });
 
 test('Returns correct attributes', function (t) {
-  t.plan(9);
+  t.plan(10);
 
   sails.request({
     url   : '/user',
@@ -92,6 +96,7 @@ test('Returns correct attributes', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.data, 'Body contains a "data" property');
       t.equal(body.data.length, 2, 'There are two user objects');
       t.equal(body.data[0].id, '1', 'First model id is 1');
@@ -107,7 +112,7 @@ test('Returns correct attributes', function (t) {
 });
 
 test('Returns correct nested resources', function (t) {
-  t.plan(5);
+  t.plan(6);
 
   sails.config.jsonapi.compoundDoc = false;
 
@@ -121,6 +126,7 @@ test('Returns correct nested resources', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.data[0].attributes.books, '"attributes" contains a "books" property');
       t.equal(typeof body.data[0].attributes.books, 'object', '"books" is an object');
       t.deepEqual(body.data[0].attributes.books[0].title, 'A Game of Thrones', '"title" of first book is "A Game of Thrones"');
@@ -132,7 +138,7 @@ test('Returns correct nested resources', function (t) {
 });
 
 test('Returns relationships for compound document', function (t) {
-  t.plan(6);
+  t.plan(7);
 
   sails.config.jsonapi.compoundDoc = true;
 
@@ -146,6 +152,7 @@ test('Returns relationships for compound document', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.data[0].relationships, 'Body contains a "relationships" property');
       t.ok(body.data[0].relationships.books, 'Relationships contains a "books" property');
       t.ok(body.data[0].relationships.books.data, 'Relationships contains a "books" property');
@@ -158,7 +165,7 @@ test('Returns relationships for compound document', function (t) {
 });
 
 test('Returns included data', function (t) {
-  t.plan(10);
+  t.plan(11);
 
   sails.config.jsonapi.compoundDoc = true;
   sails.config.jsonapi.included = true;
@@ -173,6 +180,7 @@ test('Returns included data', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.included, 'Body contains an "included" property');
       t.equal(body.included.length, 3, 'Three books are included');
       t.ok(body.included[0].type, '"included" contains a "type" property');
@@ -189,7 +197,7 @@ test('Returns included data', function (t) {
 });
 
 test('Does not return included data if "included = false"', function (t) {
-  t.plan(4);
+  t.plan(5);
 
   sails.config.jsonapi.compoundDoc = true;
   sails.config.jsonapi.included = false;
@@ -204,6 +212,7 @@ test('Does not return included data if "included = false"', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.notOk(body.included, 'Body does not contain an "included" property');
       t.ok(body.data[0].relationships, 'But it still has a "relationships" property (compound doc)');
     } catch (err) {
