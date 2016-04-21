@@ -6,10 +6,12 @@ var path = require('path');
 var Sails = require('sails').Sails;
 var test = require('tape-catch');
 var loadConfig = require('../helpers/load-config');
+var fs = require('fs');
+var ajv = require('ajv');
 var jsonApiSchema = JSON.parse(
-      require('fs').readFileSync('tests/jsonapi.schema', 'utf8')
+      fs.readFileSync('tests/jsonapi.schema', 'utf8')
     );
-var validateJsonApi = require('ajv')().compile(jsonApiSchema);
+var validateJsonApi = ajv().compile(jsonApiSchema);
 var fixtures,
     barrels,
     sails;
