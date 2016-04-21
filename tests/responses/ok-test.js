@@ -311,8 +311,8 @@ test('Support sorting by multiple fields', function (t) {
 
 /*
  * not supported yet
- *
-test('Supports fetching relationships', function (t) {
+ */
+test.skip('Supports fetching relationships', function (t) {
   t.plan(2);
 
   sails.request({
@@ -332,7 +332,6 @@ test('Supports fetching relationships', function (t) {
     t.end();
   });
 });
- */
 
 /*
  * JSON API is agnostic about the strategies supported by a server.
