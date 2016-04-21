@@ -6,6 +6,12 @@ var path = require('path');
 var Sails = require('sails').Sails;
 var test = require('tape-catch');
 var loadConfig = require('../helpers/load-config');
+var fs = require('fs');
+var ajv = require('ajv');
+var jsonApiSchema = JSON.parse(
+      fs.readFileSync('tests/jsonapi.schema', 'utf8')
+    );
+var validateJsonApi = ajv().compile(jsonApiSchema);
 var fixtures,
     barrels,
     sails;
@@ -80,7 +86,7 @@ test('Book model and fixture is loaded correctly', function (t) {
 });
 
 test('Returns correct attributes', function (t) {
-  t.plan(9);
+  t.plan(10);
 
   sails.request({
     url   : '/user',
@@ -92,8 +98,9 @@ test('Returns correct attributes', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.data, 'Body contains a "data" property');
-      t.equal(body.data.length, 2, 'There are two user objects');
+      t.equal(body.data.length, 3, 'There are three user objects');
       t.equal(body.data[0].id, '1', 'First model id is 1');
       t.equal(body.data[0].type, 'users', 'First model type is "users"');
       t.ok(body.data[0].attributes, '"data" contains an "attributes" property');
@@ -107,7 +114,7 @@ test('Returns correct attributes', function (t) {
 });
 
 test('Returns correct nested resources', function (t) {
-  t.plan(5);
+  t.plan(6);
 
   sails.config.jsonapi.compoundDoc = false;
 
@@ -121,6 +128,7 @@ test('Returns correct nested resources', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.data[0].attributes.books, '"attributes" contains a "books" property');
       t.equal(typeof body.data[0].attributes.books, 'object', '"books" is an object');
       t.deepEqual(body.data[0].attributes.books[0].title, 'A Game of Thrones', '"title" of first book is "A Game of Thrones"');
@@ -132,7 +140,7 @@ test('Returns correct nested resources', function (t) {
 });
 
 test('Returns relationships for compound document', function (t) {
-  t.plan(6);
+  t.plan(7);
 
   sails.config.jsonapi.compoundDoc = true;
 
@@ -146,6 +154,7 @@ test('Returns relationships for compound document', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.data[0].relationships, 'Body contains a "relationships" property');
       t.ok(body.data[0].relationships.books, 'Relationships contains a "books" property');
       t.ok(body.data[0].relationships.books.data, 'Relationships contains a "books" property');
@@ -158,7 +167,7 @@ test('Returns relationships for compound document', function (t) {
 });
 
 test('Returns included data', function (t) {
-  t.plan(10);
+  t.plan(11);
 
   sails.config.jsonapi.compoundDoc = true;
   sails.config.jsonapi.included = true;
@@ -173,6 +182,7 @@ test('Returns included data', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.included, 'Body contains an "included" property');
       t.equal(body.included.length, 3, 'Three books are included');
       t.ok(body.included[0].type, '"included" contains a "type" property');
@@ -189,7 +199,7 @@ test('Returns included data', function (t) {
 });
 
 test('Does not return included data if "included = false"', function (t) {
-  t.plan(4);
+  t.plan(5);
 
   sails.config.jsonapi.compoundDoc = true;
   sails.config.jsonapi.included = false;
@@ -204,8 +214,170 @@ test('Does not return included data if "included = false"', function (t) {
     try {
       t.equal(res.statusCode, 200, 'HTTP status code is 200');
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.notOk(body.included, 'Body does not contain an "included" property');
       t.ok(body.data[0].relationships, 'But it still has a "relationships" property (compound doc)');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Support simple sorting', function (t) {
+  t.plan(4);
+
+  sails.request({
+    url   : '/user',
+    data  : {sort: 'firstName'},
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.deepEqual(
+        body.data.map(function (d) {
+          return d.id;
+        }),
+        ['2', '3', '1'],
+        'Data is in correct order'
+      );
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Support descending sorting', function (t) {
+  t.plan(4);
+
+  sails.request({
+    url   : '/user',
+    data  : {sort: '-firstName'},
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.deepEqual(
+        body.data.map(function (d) {
+          return d.id;
+        }),
+        ['1', '3', '2'],
+        'Data is in correct order'
+      );
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Support sorting by multiple fields', function (t) {
+  t.plan(4);
+
+  sails.request({
+    url   : '/user',
+    data  : {sort: 'lastName,firstName'},
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.deepEqual(
+        body.data.map(function (d) {
+          return d.id;
+        }),
+        ['2', '3', '1'],
+        'Data is in correct order'
+      );
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+/*
+ * not supported yet
+ */
+test.skip('Supports fetching relationships', function (t) {
+  t.plan(2);
+
+  sails.request({
+    url   : '/author/1/relationships/books',
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+/*
+ * JSON API is agnostic about the strategies supported by a server.
+ * The filter query parameter can be used as the basis for any number of filtering strategies.
+ * Assuming waterline criteria object.
+ */
+test('Supports filter', function (t) {
+  t.plan(5);
+
+  sails.request({
+    url   : '/user',
+    data  : {filter: JSON.stringify({lastName: 'Last'})},
+    method: 'GET'
+  }, function (err, res, body) {
+    var idsInRes;
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.equal(body.data.length, 2, 'Response contains two users');
+      idsInRes = body.data.map(function (d) {
+        return d.id;
+      });
+      t.ok(idsInRes.indexOf('2') !== -1 && idsInRes.indexOf('3') !== -1, 'Response contains correct users');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Not found response is correct', function (t) {
+  t.plan(2);
+
+  sails.request({
+    url   : '/not-found',
+    method: 'GET'
+  }, function (err) {
+    try {
+      t.equal(err.status, 404, 'HTTP status code is 404');
+      t.ok(err.body === undefined, 'Body is empty');
     } catch (err) {
       t.fail(err);
     }
