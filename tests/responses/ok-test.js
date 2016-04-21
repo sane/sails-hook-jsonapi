@@ -276,6 +276,41 @@ test('Supports fetching relationships', function (t) {
 });
  */
 
+/*
+ * JSON API is agnostic about the strategies supported by a server.
+ * The filter query parameter can be used as the basis for any number of filtering strategies.
+ * Assuming waterline criteria object.
+ *
+ * Not supported yet since Sails.js expects query parameter to be 'where'.
+test('Supports filter', function (t) {
+  t.plan(5);
+
+  sails.request({
+    url   : '/user',
+    data  : {filter: JSON.stringify({lastName: 'Last'})},
+    method: 'GET'
+  }, function (err, res, body) {
+    var idsInRes;
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.equal(body.data.length, 2, 'Response contains two users');
+      idsInRes = body.data.map(function (d) {
+        return d.id;
+      });
+      t.ok(idsInRes.indexOf('2') !== -1 && idsInRes.indexOf('3') !== -1, 'Response contains correct users');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+ */
+
 test('Not found response is correct', function (t) {
   t.plan(2);
 
