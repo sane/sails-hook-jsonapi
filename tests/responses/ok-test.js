@@ -222,6 +222,48 @@ test('Does not return included data if "included = false"', function (t) {
   });
 });
 
+/*
+ * not supported yet
+ *
+test('Supports fetching relationships', function (t) {
+  t.plan(2);
+
+  sails.request({
+    url   : '/author/1/relationships/books',
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+ */
+
+test('Not found response is correct', function (t) {
+  t.plan(2);
+
+  sails.request({
+    url   : '/not-found',
+    method: 'GET'
+  }, function (err) {
+    try {
+      t.equal(err.status, 404, 'HTTP status code is 404');
+      t.ok(err.body === undefined, 'Body is empty');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
 test('Teardown', function (t) {
   sails.lower(function () {
     t.end();
