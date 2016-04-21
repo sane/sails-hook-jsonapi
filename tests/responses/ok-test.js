@@ -222,10 +222,68 @@ test('Does not return included data if "included = false"', function (t) {
   });
 });
 
+test('Support simple sorting', function (t) {
+  t.plan(4);
+
+  sails.request({
+    url   : '/user',
+    data  : {sort: 'firstName'},
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.deepEqual(
+        body.data.map(function (d) {
+          return d.id;
+        }),
+        ['2', '3', '1'],
+        'Data is in correct order'
+      );
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
 /*
  * not supported yet
  *
-test('Support sorting', function (t) {
+test('Support descending sorting', function (t) {
+  t.plan(4);
+
+  sails.request({
+    url   : '/user',
+    data  : {sort: '-firstName'},
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.deepEqual(
+        body.data.map(function (d) {
+          return d.id;
+        }),
+        ['1', '3', '2'],
+        'Data is in correct order'
+      );
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Support sorting by multiple fields', function (t) {
   t.plan(4);
 
   sails.request({
