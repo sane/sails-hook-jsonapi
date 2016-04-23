@@ -5,7 +5,7 @@ var Barrels = require('barrels');
 var path = require('path');
 var Sails = require('sails').Sails;
 var test = require('tape-catch');
-var loadConfig = require('../helpers/load-config');
+var loadConfig = require('./helpers/load-config');
 var fs = require('fs');
 var ajv = require('ajv');
 var _ = require('lodash');
@@ -438,7 +438,187 @@ test('Fetching records: not found response is correct', function (t) {
   });
 });
 
-test('Bootstrap: Teardown', function (t) {
+test('Creating a resource: simple', function (t) {
+  t.plan(9);
+
+  sails.request({
+    url   : '/author',
+    method: 'POST',
+    data  : {
+      data: {
+        type      : 'authors',
+        attributes: {
+          name: 'George Orwell'
+        }
+      }
+    }
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      // response
+      t.equal(res.statusCode, 201, 'HTTP status code is 201 Created');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.equal(typeof body.data, 'object', 'Response data is a resource object.');
+      t.equal(body.data.type, 'authors', 'Type of resource object in response is correct.');
+      t.ok(body.data.id, 'Server-side generated id is part of resource object in response.');
+      t.equal(body.data.attributes.name, 'George Orwell', 'Attribute of resource object in response is correct.');
+      // persistence in database
+      Author.findOne(body.data.id).exec(function (err, record) {
+        if (err) {
+          t.fail(err);
+        }
+        t.ok(record, 'Resource is persisted in database.');
+        // prevent tests to throw if resource is not persisted and record is null
+        if (record) {
+          t.equal(record.name, 'George Orwell', 'Attribute is persisted in database');
+        }
+        t.end();
+      });
+    } catch (err) {
+      t.fail(err);
+    }
+  });
+});
+
+test('Creating a resource: one-to relationship', function (t) {
+  t.plan(7);
+
+  sails.config.jsonapi.compoundDoc = true;
+
+  sails.request({
+    url   : '/book',
+    method: 'POST',
+    data  : {
+      data: {
+        type      : 'books',
+        attributes: {
+          title: 'A Clash of Kings'
+        },
+        relationships: {
+          author: {
+            data: {
+              type: 'authors',
+              id  : '1'
+            }
+          }
+        }
+      }
+    }
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    // response
+    try {
+      t.equal(res.statusCode, 201, 'HTTP status code is 201 Created');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.ok(body.data.relationships.author, 'Relationship is part of resource object in response');
+      t.deepEqual(body.data.relationships.author.data, {type: 'authors', id: '1'}, 'Relationship of resource object in response points to correct record');
+    } catch (err) {
+      t.fail(err);
+    }
+    // persistence in database
+    try {
+      Book.findOne(body.data.id).populate('author').exec(function (err, record) {
+        if (err) {
+          t.fail(err);
+        }
+        try {
+          t.ok(record, 'Resource is persisted in database.');
+          t.equal(record.author.id, 1, 'Relationship is persisted');
+        } catch (err) {
+          t.fail(err);
+        }
+        t.end();
+      });
+    } catch (err) {
+      t.fail(err);
+    }
+  });
+});
+
+test('Creating a resource: many-to relationship', function (t) {
+  t.plan(7);
+
+  sails.config.jsonapi.compoundDoc = true;
+
+  sails.request({
+    url   : '/user',
+    method: 'POST',
+    data  : {
+      data: {
+        name      : 'users',
+        attributes: {
+          fistName: 'John',
+          lastName: 'Doe'
+        },
+        relationships: {
+          groupieOf: {
+            data: [
+              {
+                type: 'authors',
+                id  : '1'
+              },
+              {
+                type: 'authors',
+                id  : '2'
+              }
+            ]
+          }
+        }
+      }
+    }
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    // response
+    try {
+      t.equal(res.statusCode, 201, 'HTTP status code is 201 Created');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.ok(body.data.relationships['groupie-of'], 'Relationship is part of resource object in response');
+      t.deepEqual(
+        body.data.relationships['groupie-of'].data.map(function (relationship) {
+          return relationship.id;
+        }),
+        ['1', '2'],
+        'Relationships are correct'
+      );
+    } catch (err) {
+      t.fail(err);
+    }
+    // persistence in database
+    try {
+      User.findOne(body.data.id).populate('groupieOf').exec(function (err, record) {
+        if (err) {
+          t.fail(err);
+        }
+        try {
+          t.ok(record, 'Resource is persisted in database.');
+          t.deepEqual(
+            record.groupieOf.map(function (rel) {
+              return rel.id;
+            }),
+            [1, 2],
+            'Relationship is persisted'
+          );
+        } catch (err) {
+          t.fail(err);
+        }
+        t.end();
+      });
+    } catch (err) {
+      t.fail(err);
+    }
+  });
+});
+
+test('Bootstrap: Fetching record: teardown', function (t) {
   sails.lower(function () {
     t.end();
     process.exit(0); // A hack because otherwise tests won't end.  See https://github.com/balderdashy/sails/issues/2309
