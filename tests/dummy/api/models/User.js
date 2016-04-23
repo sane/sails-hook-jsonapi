@@ -12,7 +12,12 @@ module.exports = {
     firstName: 'STRING',
     lastName: 'STRING',
     email: 'EMAIL',
-    password: 'STRING'
+    password: 'STRING',
+
+    // relationships
+    groupieOf: {
+      collection: 'author',
+      via: 'groupies'
+    }
   }
 };
-

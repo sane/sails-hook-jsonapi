@@ -16,6 +16,9 @@ module.exports = {
       collection: 'book',
       via: 'author'
     },
+    groupies: {
+      collection: 'user',
+      via: 'groupieOf'
+    }
   }
 };
-
