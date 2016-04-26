@@ -31,19 +31,24 @@ Create a `jsonapi.js` file inside the `config/` directory of your app, and you c
 
 ### Known Limitations
 
-This is unfinished.  So far, the following are not yet implemented:
+This is unfinished. So far, the following are not yet implemented:
 
-- [ ] Included request parameter handling (400 response if present)
-- [ ] Links
-  - [ ] Top-level "self" links
-  - [ ] Top-level "related" links
-  - [ ] Resource-level "self" links
-  - [ ] Related resource relationship links
-  - [ ] Metadata links
-- [ ] Pagination
-- [ ] Formatting
-  - [ ] Non-dasherized attributes
-- [ ] Sparse fieldsets
+- Fetching resources
+  - [ ] Included request parameter handling
+  - [ ] Links
+    - [ ] Top-level "self" links
+    - [ ] Top-level "related" links
+    - [ ] Resource-level "self" links
+    - [ ] Related resource relationship links
+    - [ ] Metadata links
+  - [ ] Pagination
+  - [ ] Formatting
+    - [ ] Non-dasherized attributes
+  - [ ] Sparse fieldsets
 - [ ] Fetching relationships
+- [ ] Updating resources
+- [ ] Updating relationships
+- [ ] Deleting resources
+- [ ] Deleting relationships
 
 There may be more.  Please submit issue reports.  Or better yet, pull requests.  In all honesty, I've stopped using Sails for the time being, and I am no longer activly developing this library.  If anyone is interested in taking it over, let's talk.
