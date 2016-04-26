@@ -140,7 +140,7 @@ test('Fetching records collection: many-to relationship', function (t) {
 });
 
 test('Fetching records collection: one-to relationship', function (t) {
-  t.plan(6);
+  t.plan(7);
 
   sails.request({
     url   : '/book',
@@ -159,6 +159,7 @@ test('Fetching records collection: one-to relationship', function (t) {
         'Relationship value is an object for one-to relationship'
       );
       t.deepEqual(body.data[0].relationships.author.data, { type: 'authors', id: '1' }, 'Relationship data is an resource linkage as default');
+      t.notOk(body.data[0].attributes.hasOwnProperty('author'), 'A relationship value should not appear as a attribute');
     } catch (err) {
       t.fail(err);
     }
@@ -484,7 +485,7 @@ test('Creating a resource: simple', function (t) {
 });
 
 test('Creating a resource: one-to relationship', function (t) {
-  t.plan(7);
+  t.plan(8);
 
   sails.config.jsonapi.compoundDoc = true;
 
@@ -518,6 +519,7 @@ test('Creating a resource: one-to relationship', function (t) {
       t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.data.relationships.author, 'Relationship is part of resource object in response');
       t.deepEqual(body.data.relationships.author.data, {type: 'authors', id: '1'}, 'Relationship of resource object in response points to correct record');
+      t.notOk(body.data.attributes.hasOwnProperty('author'), 'A relationship value should not appear as a attribute');
     } catch (err) {
       t.fail(err);
     }
