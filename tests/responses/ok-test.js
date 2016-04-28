@@ -8,6 +8,8 @@ var test = require('tape-catch');
 var loadConfig = require('../helpers/load-config');
 var fs = require('fs');
 var ajv = require('ajv');
+var _ = require('lodash');
+
 var jsonApiSchema = JSON.parse(
       fs.readFileSync('tests/jsonapi.schema', 'utf8')
     );
@@ -16,7 +18,7 @@ var fixtures,
     barrels,
     sails;
 
-test('Sails does not crash', function (t) {
+test('Bootstrap: Sails does not crash', function (t) {
   // Attempt to lift sails
   Sails().load(loadConfig, function (err, _sails) {
     if (err) {
@@ -34,7 +36,7 @@ test('Sails does not crash', function (t) {
   });
 });
 
-test('User model and fixture is loaded correctly', function (t) {
+test('Bootstrap: User model and fixture is loaded correctly', function (t) {
   t.plan(3);
 
   User.find().exec(function (err, users) {
@@ -51,7 +53,7 @@ test('User model and fixture is loaded correctly', function (t) {
   });
 });
 
-test('Author model and fixture is loaded correctly', function (t) {
+test('Bootstrap: Author model and fixture is loaded correctly', function (t) {
   t.plan(3);
 
   Author.find().exec(function (err, authors) {
@@ -85,7 +87,7 @@ test('Book model and fixture is loaded correctly', function (t) {
   });
 });
 
-test('Returns correct attributes', function (t) {
+test('Fetching records collection: returns correct attributes', function (t) {
   t.plan(10);
 
   sails.request({
@@ -113,7 +115,58 @@ test('Returns correct attributes', function (t) {
   });
 });
 
-test('Returns correct nested resources', function (t) {
+test('Fetching records collection: many-to relationship', function (t) {
+  t.plan(6);
+
+  sails.request({
+    url   : '/author',
+    method: 'GET',
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.ok(body.data[0].relationships, 'Resource object has relationships object');
+      t.ok(_.isArray(body.data[0].relationships.books.data), 'Relationship value is an array for many-to relationship');
+      t.deepEqual(body.data[0].relationships.books.data[0], { type: 'books', id: '1' }, 'Relationship data is an resource linkage as default');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Fetching records collection: one-to relationship', function (t) {
+  t.plan(6);
+
+  sails.request({
+    url   : '/book',
+    method: 'GET',
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.ok(body.data[0].relationships, 'Resource object has relationships object');
+      t.ok(
+        typeof body.data[0].relationships.author.data === 'object' && !_.isArray(body.data[0].relationships.author.data),
+        'Relationship value is an object for one-to relationship'
+      );
+      t.deepEqual(body.data[0].relationships.author.data, { type: 'authors', id: '1' }, 'Relationship data is an resource linkage as default');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Fetching records collection: returns correct nested resources', function (t) {
   t.plan(6);
 
   sails.config.jsonapi.compoundDoc = false;
@@ -139,7 +192,7 @@ test('Returns correct nested resources', function (t) {
   });
 });
 
-test('Returns relationships for compound document', function (t) {
+test('Fetching records collection: returns relationships for compound document', function (t) {
   t.plan(7);
 
   sails.config.jsonapi.compoundDoc = true;
@@ -166,7 +219,7 @@ test('Returns relationships for compound document', function (t) {
   });
 });
 
-test('Returns included data', function (t) {
+test('Fetching records collection: returns included data', function (t) {
   t.plan(11);
 
   sails.config.jsonapi.compoundDoc = true;
@@ -198,7 +251,7 @@ test('Returns included data', function (t) {
   });
 });
 
-test('Does not return included data if "included = false"', function (t) {
+test('Fetching records collection: does not return included data if "included = false"', function (t) {
   t.plan(5);
 
   sails.config.jsonapi.compoundDoc = true;
@@ -224,7 +277,7 @@ test('Does not return included data if "included = false"', function (t) {
   });
 });
 
-test('Support simple sorting', function (t) {
+test('Fetching records collection: support simple sorting', function (t) {
   t.plan(4);
 
   sails.request({
@@ -253,7 +306,7 @@ test('Support simple sorting', function (t) {
   });
 });
 
-test('Support descending sorting', function (t) {
+test('Fetching records collection: support descending sorting', function (t) {
   t.plan(4);
 
   sails.request({
@@ -282,7 +335,7 @@ test('Support descending sorting', function (t) {
   });
 });
 
-test('Support sorting by multiple fields', function (t) {
+test('Fetching records collection: support sorting by multiple fields', function (t) {
   t.plan(4);
 
   sails.request({
@@ -314,7 +367,7 @@ test('Support sorting by multiple fields', function (t) {
 /*
  * not supported yet
  */
-test.skip('Supports fetching relationships', function (t) {
+test.skip('Fetching records collection: supports fetching relationships', function (t) {
   t.plan(2);
 
   sails.request({
@@ -340,7 +393,7 @@ test.skip('Supports fetching relationships', function (t) {
  * The filter query parameter can be used as the basis for any number of filtering strategies.
  * Assuming waterline criteria object.
  */
-test('Supports filter', function (t) {
+test('Fetching records collection: supports filter', function (t) {
   t.plan(5);
 
   sails.request({
@@ -368,7 +421,7 @@ test('Supports filter', function (t) {
   });
 });
 
-test('Not found response is correct', function (t) {
+test('Fetching records: not found response is correct', function (t) {
   t.plan(2);
 
   sails.request({
@@ -385,7 +438,7 @@ test('Not found response is correct', function (t) {
   });
 });
 
-test('Teardown', function (t) {
+test('Bootstrap: Teardown', function (t) {
   sails.lower(function () {
     t.end();
     process.exit(0); // A hack because otherwise tests won't end.  See https://github.com/balderdashy/sails/issues/2309
