@@ -1,11 +1,9 @@
 <p align="center"><img src="/../images/sails.png?raw=true" height="80"/><img src="/../images/jsonapi.png?raw=true" height="80"/></p>
 
 # sails-hook-jsonapi
-[![Build Status](https://travis-ci.org/IanVS/sails-hook-jsonapi.svg?branch=master)](https://travis-ci.org/IanVS/sails-hook-jsonapi)
-[![Dependency Status](https://david-dm.org/IanVS/sails-hook-jsonapi.svg)](https://david-dm.org/IanVS/sails-hook-jsonapi)
-[![devDependency Status](https://david-dm.org/IanVS/sails-hook-jsonapi/dev-status.svg)](https://david-dm.org/IanVS/sails-hook-jsonapi#info=devDependencies)
-
-
+[![Build Status](https://travis-ci.org/sane/sails-hook-jsonapi.svg?branch=master)](https://travis-ci.org/sane/sails-hook-jsonapi)
+[![Dependency Status](https://david-dm.org/sane/sails-hook-jsonapi.svg)](https://david-dm.org/sane/sails-hook-jsonapi)
+[![devDependency Status](https://david-dm.org/sane/sails-hook-jsonapi/dev-status.svg)](https://david-dm.org/sane/sails-hook-jsonapi#info=devDependencies)
 
 This is a [Sails JS](http://sailsjs.org) hook for creating an API which conforms to JSON API specifications per jsonapi.org.
 
@@ -51,4 +49,4 @@ This is unfinished. So far, the following are not yet implemented:
 - [ ] Deleting resources
 - [ ] Deleting relationships
 
-There may be more.  Please submit issue reports.  Or better yet, pull requests.  In all honesty, I've stopped using Sails for the time being, and I am no longer activly developing this library.  If anyone is interested in taking it over, let's talk.
+There may be more. Please submit issue reports. Or better yet, pull requests.
