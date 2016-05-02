@@ -116,7 +116,7 @@ test('Fetching records collection: returns correct attributes', function (t) {
 });
 
 test('Fetching records collection: many-to relationship', function (t) {
-  t.plan(6);
+  t.plan(10);
 
   sails.request({
     url   : '/author',
@@ -131,7 +131,34 @@ test('Fetching records collection: many-to relationship', function (t) {
       t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.ok(body.data[0].relationships, 'Resource object has relationships object');
       t.ok(_.isArray(body.data[0].relationships.books.data), 'Relationship value is an array for many-to relationship');
-      t.deepEqual(body.data[0].relationships.books.data[0], { type: 'books', id: '1' }, 'Relationship data is an resource linkage as default');
+      t.deepEqual(body.data[0].relationships.books.data[0], { type: 'books', id: '1' }, 'Relationship data is a resource linkage');
+      t.ok(body.included, 'A compound document is returned as default');
+      t.ok(_.isArray(body.included), 'Top-lebel member included is an array');
+      t.ok(
+        // all resources in body
+        body.data.every(function (resource, index) {
+          // all relationships of a resource in body
+          return resource.relationships.books.data.every(function (relationship, index) {
+            // must match one resource under included top-level
+            return body.included.some(function (includedResource) {
+              return includedResource.type === relationship.type && includedResource.id === relationship.id;
+            });
+          });
+        }),
+        'All resources linked as relationships are included'
+      );
+      t.ok(
+        // all resources in included
+        body.included.every(function (resource, index) {
+          // must match atleast one relationship in primary resource
+          return body.data.some(function (mainResource, index) {
+            return mainResource.relationships.books.data.some(function (relationship) {
+              return resource.type === relationship.type && resource.id === relationship.id;
+            });
+          });
+        }),
+        'All resources included must match atleast one relationship in primary data'
+      );
     } catch (err) {
       t.fail(err);
     }
@@ -140,7 +167,7 @@ test('Fetching records collection: many-to relationship', function (t) {
 });
 
 test('Fetching records collection: one-to relationship', function (t) {
-  t.plan(7);
+  t.plan(9);
 
   sails.request({
     url   : '/book',
@@ -160,6 +187,28 @@ test('Fetching records collection: one-to relationship', function (t) {
       );
       t.deepEqual(body.data[0].relationships.author.data, { type: 'authors', id: '1' }, 'Relationship data is an resource linkage as default');
       t.notOk(body.data[0].attributes.hasOwnProperty('author'), 'A relationship value should not appear as a attribute');
+      t.ok(
+        // all resources in body
+        body.data.every(function (resource, index) {
+          var relationship = resource.relationships.author.data;
+          // must match one resource under included top-level
+          return body.included.some(function (includedResource) {
+            return includedResource.type === relationship.type && includedResource.id === relationship.id;
+          });
+        }),
+        'All resources linked as relationships are included'
+      );
+      t.ok(
+        // all resources in included
+        body.included.every(function (resource, index) {
+          // must match atleast one relationship in primary resource
+          return body.data.some(function (mainResource, index) {
+            var relationship = mainResource.relationships.author.data;
+            return resource.type === relationship.type && resource.id === relationship.id;
+          });
+        }),
+        'All resources included must match atleast one relationship in primary data'
+      );
     } catch (err) {
       t.fail(err);
     }
@@ -167,64 +216,8 @@ test('Fetching records collection: one-to relationship', function (t) {
   });
 });
 
-test('Fetching records collection: returns correct nested resources', function (t) {
-  t.plan(6);
-
-  sails.config.jsonapi.compoundDoc = false;
-
-  sails.request({
-    url   : '/author',
-    method: 'GET',
-  }, function (err, res, body) {
-    if (err) {
-      t.fail(err);
-    }
-    try {
-      t.equal(res.statusCode, 200, 'HTTP status code is 200');
-      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
-      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
-      t.ok(body.data[0].attributes.books, '"attributes" contains a "books" property');
-      t.equal(typeof body.data[0].attributes.books, 'object', '"books" is an object');
-      t.deepEqual(body.data[0].attributes.books[0].title, 'A Game of Thrones', '"title" of first book is "A Game of Thrones"');
-    } catch (err) {
-      t.fail(err);
-    }
-    t.end();
-  });
-});
-
-test('Fetching records collection: returns relationships for compound document', function (t) {
-  t.plan(7);
-
-  sails.config.jsonapi.compoundDoc = true;
-
-  sails.request({
-    url   : '/author',
-    method: 'GET',
-  }, function (err, res, body) {
-    if (err) {
-      t.fail(err);
-    }
-    try {
-      t.equal(res.statusCode, 200, 'HTTP status code is 200');
-      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
-      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
-      t.ok(body.data[0].relationships, 'Body contains a "relationships" property');
-      t.ok(body.data[0].relationships.books, 'Relationships contains a "books" property');
-      t.ok(body.data[0].relationships.books.data, 'Relationships contains a "books" property');
-      t.equal(body.data[0].relationships.books.data[0].type, 'books', '"type" of first book is "books"');
-    } catch (err) {
-      t.fail(err);
-    }
-    t.end();
-  });
-});
-
-test('Fetching records collection: returns included data', function (t) {
+test('Fetching records collection: included data', function (t) {
   t.plan(11);
-
-  sails.config.jsonapi.compoundDoc = true;
-  sails.config.jsonapi.included = true;
 
   sails.request({
     url   : '/author',
@@ -252,11 +245,10 @@ test('Fetching records collection: returns included data', function (t) {
   });
 });
 
-test('Fetching records collection: does not return included data if "included = false"', function (t) {
+test('Fetching records collection: does not return included data if "compoundDoc = false"', function (t) {
   t.plan(5);
 
-  sails.config.jsonapi.compoundDoc = true;
-  sails.config.jsonapi.included = false;
+  sails.config.jsonapi.compoundDoc = false;
 
   sails.request({
     url   : '/author',
@@ -270,7 +262,7 @@ test('Fetching records collection: does not return included data if "included = 
       t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
       t.ok(validateJsonApi(body), 'Body is a valid JSON API');
       t.notOk(body.included, 'Body does not contain an "included" property');
-      t.ok(body.data[0].relationships, 'But it still has a "relationships" property (compound doc)');
+      t.ok(body.data[0].relationships, 'But it still has a "relationships" property');
     } catch (err) {
       t.fail(err);
     }

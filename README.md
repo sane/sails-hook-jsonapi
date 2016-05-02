@@ -23,9 +23,7 @@ Create a `jsonapi.js` file inside the `config/` directory of your app, and you c
 
 | Option        | Default   |  Description  |
 |---------------|:---------:|---------------|
-| `compoundDoc` |  `true`   | When set to 'true' (default), response will be a [compound document](http://jsonapi.org/format/#document-compound-documents). Otherwise, related resources will be nested within the top-level resource attributes. |
-| `included`    |  `true`   | When set to `true` (default), related resource data will be [included](http://jsonapi.org/format/#fetching-includes) in the response. Currently, `include` parameters in client requests are not supported.  |
-
+| `compoundDoc` |  `true`   | When set to 'true' (default), response will be a [compound document](http://jsonapi.org/format/#document-compound-documents) including related resources. |
 
 ### Known Limitations
 
