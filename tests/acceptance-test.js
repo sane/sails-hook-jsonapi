@@ -612,6 +612,51 @@ test('Creating a resource: many-to relationship', function (t) {
   });
 });
 
+test('Deleting a resource: simple', function (t) {
+  t.plan(3);
+
+  Author.create({
+    name: 'dummy to be deleted'
+  }).then(function(author) {
+    sails.request({
+      url   : '/author/' + author.id,
+      method: 'DELETE',
+    }, function (err, res, body) {
+      if (err) {
+        t.fail(err);
+      }
+      try {
+        t.equal(res.statusCode, 204, 'HTTP status code is 204 No Content');
+        t.equal(res.body, undefined, 'Body is empty');
+        Author.findOne(author.id).exec(function(err, res) {
+          t.equal(res, undefined, 'Resource is deleted in database');
+          t.end();
+        });
+      } catch (err) {
+        t.fail(err);
+      }
+    });
+  }).catch(function(err) {
+    t.fail(err);
+  });
+});
+
+test('Deleting a resource: not existing', function (t) {
+  t.plan(1);
+
+  sails.request({
+    url   : '/author/666',
+    method: 'DELETE',
+  }, function (err) {
+    try {
+      t.equal(err.status, 404, 'HTTP status code is 404 Not Found');
+      t.end();
+    } catch (err) {
+      t.fail(err);
+    }
+  });
+});
+
 test('Bootstrap: Fetching record: teardown', function (t) {
   sails.lower(function () {
     t.end();

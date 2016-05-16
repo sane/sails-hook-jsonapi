@@ -44,7 +44,6 @@ This is unfinished. So far, the following are not yet implemented:
 - [ ] Fetching relationships
 - [ ] Updating resources
 - [ ] Updating relationships
-- [ ] Deleting resources
 - [ ] Deleting relationships
 
 There may be more. Please submit issue reports. Or better yet, pull requests.
