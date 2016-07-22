@@ -617,7 +617,7 @@ test('Deleting a resource: simple', function (t) {
 
   Author.create({
     name: 'dummy to be deleted'
-  }).then(function(author) {
+  }).then(function (author) {
     sails.request({
       url   : '/author/' + author.id,
       method: 'DELETE',
@@ -628,7 +628,10 @@ test('Deleting a resource: simple', function (t) {
       try {
         t.equal(res.statusCode, 204, 'HTTP status code is 204 No Content');
         t.equal(res.body, undefined, 'Body is empty');
-        Author.findOne(author.id).exec(function(err, res) {
+        Author.findOne(author.id).exec(function (err, res) {
+          if (err) {
+            t.fail(err);
+          }
           t.equal(res, undefined, 'Resource is deleted in database');
           t.end();
         });
@@ -636,7 +639,7 @@ test('Deleting a resource: simple', function (t) {
         t.fail(err);
       }
     });
-  }).catch(function(err) {
+  }).catch(function (err) {
     t.fail(err);
   });
 });
