@@ -1,6 +1,6 @@
 {
   "name": "sails-hook-jsonapi",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A Sails.js hook for creating an API which conforms to JSON API specifications per jsonapi.org",
   "main": "index.js",
   "sails": {
