@@ -660,6 +660,572 @@ test('Deleting a resource: not existing', function (t) {
   });
 });
 
+test('Updating a resource: simple', function (t) {
+  t.plan(7);
+
+  User.create({
+    firstName: 'John',
+    lastName : 'Doe'
+  }).then(function (user) {
+    sails.request({
+      url   : '/user/' + user.id,
+      method: 'PATCH',
+      data  : {
+        data: {
+          type      : 'users',
+          id        : user.id,
+          attributes: {
+            lastName: 'Roe'
+          }
+        }
+      }
+    }, function (err, res, body) {
+      if (err) {
+        t.fail(err);
+      }
+      // response
+      try {
+        t.equal(res.statusCode, 200, 'HTTP status code is 200 Ok');
+        t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+        t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+        t.equal(body.data.attributes['last-name'], 'Roe', 'Updated attribute is correct in response');
+        t.equal(body.data.attributes['first-name'], 'John', 'Untouched attribute is correct in response');
+      } catch (err) {
+        t.fail(err);
+      }
+      // persistence in database
+      try {
+        User.findOne(user.id).exec(function (err, record) {
+          if (err) {
+            t.fail(err);
+          }
+          try {
+            t.equal(record.lastName, 'Roe', 'Updated attribute is persisted in database');
+            t.equal(record.firstName, 'John', 'Untouched attribute is not changed in database');
+          } catch (err) {
+            t.fail(err);
+          }
+          t.end();
+        });
+      } catch (err) {
+        t.fail(err);
+      }
+    });
+  });
+});
+
+test('Updating a resource: to-one relationship (add)', function (t) {
+  t.plan(7);
+
+  Book.create({
+    title: 'example'
+  }).then(function (book) {
+    sails.request({
+      url   : '/book/' + book.id,
+      method: 'PATCH',
+      data  : {
+        data: {
+          type         : 'books',
+          id           : book.id,
+          relationships: {
+            author: {
+              data: {
+                type: 'authors',
+                id  : 1
+              }
+            }
+          }
+        }
+      }
+    }, function (err, res, body) {
+      if (err) {
+        t.fail(err);
+      }
+      // response
+      try {
+        t.equal(res.statusCode, 200, 'HTTP status code is 200 Ok');
+        t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+        t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+        t.equal(body.data.attributes['title'], 'example', 'Untouched attribute is correct in response');
+        t.deepEqual(body.data.relationships.author.data, { type: 'authors', id: '1' }, 'Updated relationship is correct in response');
+      } catch (err) {
+        t.fail(err);
+      }
+      // persistence in database
+      try {
+        Book.findOne(book.id).exec(function (err, record) {
+          if (err) {
+            t.fail(err);
+          }
+          try {
+            t.equal(record.title, 'example', 'Untouched attribute is still correct in database');
+            t.equal(record.author, 1, 'Updated relationship is persisted in database');
+          } catch (err) {
+            t.fail(err);
+          }
+          t.end();
+        });
+      } catch (err) {
+        t.fail(err);
+      }
+    });
+  });
+});
+
+test('Updating a resource: to-one relationship (modify)', function (t) {
+  t.plan(7);
+
+  Book.create({
+    title : 'example',
+    author: 1
+  }).then(function (book) {
+    sails.request({
+      url   : '/book/' + book.id,
+      method: 'PATCH',
+      data  : {
+        data: {
+          type         : 'books',
+          id           : book.id,
+          relationships: {
+            author: {
+              data: {
+                type: 'authors',
+                id  : 2
+              }
+            }
+          }
+        }
+      }
+    }, function (err, res, body) {
+      if (err) {
+        t.fail(err);
+      }
+      // response
+      try {
+        t.equal(res.statusCode, 200, 'HTTP status code is 200 Ok');
+        t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+        t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+        t.equal(body.data.attributes['title'], 'example', 'Untouched attribute is correct in response');
+        t.deepEqual(body.data.relationships.author.data, { type: 'authors', id: '2' }, 'Updated relationship is correct in response');
+      } catch (err) {
+        t.fail(err);
+      }
+      // persistence in database
+      try {
+        Book.findOne(book.id).exec(function (err, record) {
+          if (err) {
+            t.fail(err);
+          }
+          try {
+            t.equal(record.title, 'example', 'Untouched attribute is still correct in database');
+            t.equal(record.author, 2, 'Updated relationship is persisted in database');
+          } catch (err) {
+            t.fail(err);
+          }
+          t.end();
+        });
+      } catch (err) {
+        t.fail(err);
+      }
+    });
+  });
+});
+
+test('Updating a resource: to-one relationship (remove)', function (t) {
+  t.plan(7);
+
+  Book.create({
+    title : 'example',
+    author: 1
+  }).then(function (book) {
+    sails.request({
+      url   : '/book/' + book.id,
+      method: 'PATCH',
+      data  : {
+        data: {
+          type         : 'books',
+          id           : book.id,
+          relationships: {
+            author: {
+              data: null
+            }
+          }
+        }
+      }
+    }, function (err, res, body) {
+      if (err) {
+        t.fail(err);
+      }
+      // response
+      try {
+        t.equal(res.statusCode, 200, 'HTTP status code is 200 Ok');
+        t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+        t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+        t.equal(body.data.attributes['title'], 'example', 'Untouched attribute is correct in response');
+        t.deepEqual(body.data.relationships.author.data, null, 'Updated relationship is correct in response');
+      } catch (err) {
+        t.fail(err);
+      }
+      // persistence in database
+      try {
+        Book.findOne(book.id).exec(function (err, record) {
+          if (err) {
+            t.fail(err);
+          }
+          try {
+            t.equal(record.title, 'example', 'Untouched attribute is still correct in database');
+            t.equal(record.author, null, 'Updated relationship is persisted in database');
+          } catch (err) {
+            t.fail(err);
+          }
+          t.end();
+        });
+      } catch (err) {
+        t.fail(err);
+      }
+    });
+  });
+});
+
+test('Updating a resource: to-one relationship (not changed)', function (t) {
+  t.plan(6);
+
+  Book.create({
+    title : 'example',
+    author: 1
+  }).then(function (book) {
+    sails.request({
+      url   : '/book/' + book.id,
+      method: 'PATCH',
+      data  : {
+        data: {
+          type      : 'books',
+          id        : book.id,
+          attributes: {
+            title: 'changed'
+          }
+        }
+      }
+    }, function (err, res, body) {
+      if (err) {
+        t.fail(err);
+      }
+      // response
+      try {
+        t.equal(res.statusCode, 200, 'HTTP status code is 200 Ok');
+        t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+        t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+        t.equal(body.data.attributes['title'], 'changed', 'Updated attribute is correct in response');
+      } catch (err) {
+        t.fail(err);
+      }
+      // persistence in database
+      try {
+        Book.findOne(book.id).exec(function (err, record) {
+          if (err) {
+            t.fail(err);
+          }
+          try {
+            t.equal(record.title, 'changed', 'Updated attribute is persisted in database.');
+            t.equal(record.author, 1, 'Untouched relationship is correct in response.');
+          } catch (err) {
+            t.fail(err);
+          }
+          t.end();
+        });
+      } catch (err) {
+        t.fail(err);
+      }
+    });
+  });
+});
+
+test('Updating a resource: to-many relationship (add)', function (t) {
+  t.plan(7);
+
+  Author.create({
+    name: 'Kevin Vennemann'
+  }).exec(function (err, author) {
+    if (err) {
+      t.fail();
+    }
+
+    Book.create({
+      title: 'Nahe Jedenew'
+    }).exec(function (err, book) {
+      if (err) {
+        t.fail();
+      }
+
+      sails.request({
+        url   : '/author/' + author.id,
+        method: 'PATCH',
+        data  : {
+          data: {
+            type         : 'authors',
+            id           : author.id,
+            relationships: {
+              books: {
+                data: [{
+                  type: 'books',
+                  id  : book.id
+                }]
+              }
+            }
+          }
+        }
+      }, function (err, res, body) {
+        if (err) {
+          t.fail(err);
+        }
+        // response
+        try {
+          t.equal(res.statusCode, 200, 'HTTP status code is 200 Ok');
+          t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+          t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+          t.equal(body.data.attributes['name'], 'Kevin Vennemann', 'Untouched attribute is correct in response');
+          t.deepEqual(body.data.relationships.books.data, [{ type: 'books', id: book.id.toString() }], 'Updated relationship is correct in response');
+        } catch (err) {
+          t.fail(err);
+        }
+        // persistence in database
+        try {
+          Author.findOne(author.id).populate('books').exec(function (err, record) {
+            if (err) {
+              t.fail(err);
+            }
+            try {
+              t.equal(record.name, 'Kevin Vennemann', 'Untouched attribute is still correct in database');
+              t.equal(record.books[0].id, book.id, 'Updated relationship is persisted in database');
+            } catch (err) {
+              t.fail(err);
+            }
+            t.end();
+          });
+        } catch (err) {
+          t.fail(err);
+        }
+      });
+    });
+  });
+});
+
+test('Updating a resource: to-many relationship (remove)', function (t) {
+  t.plan(7);
+
+  Author.create({
+    name: 'Kevin Vennemann'
+  }).exec(function (err, author) {
+    if (err) {
+      t.fail();
+    }
+
+    Book.create({
+      title : 'Nahe Jedenew',
+      author: [author.id]
+    }).exec(function (err, book) {
+      if (err) {
+        t.fail();
+      }
+
+      sails.request({
+        url   : '/author/' + author.id,
+        method: 'PATCH',
+        data  : {
+          data: {
+            type         : 'authors',
+            id           : author.id,
+            relationships: {
+              books: {
+                data: []
+              }
+            }
+          }
+        }
+      }, function (err, res, body) {
+        if (err) {
+          t.fail(err);
+        }
+        // response
+        try {
+          t.equal(res.statusCode, 200, 'HTTP status code is 200 Ok');
+          t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+          t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+          t.equal(body.data.attributes['name'], 'Kevin Vennemann', 'Untouched attribute is correct in response');
+          t.ok(
+            _.isArray(body.data.relationships.books.data) && body.data.relationships.books.data.length === 0,
+            'Updated relationship is correct in response'
+          );
+        } catch (err) {
+          t.fail(err);
+        }
+        // persistence in database
+        try {
+          Author.findOne(author.id).populate('books').exec(function (err, record) {
+            if (err) {
+              t.fail(err);
+            }
+            try {
+              t.equal(record.name, 'Kevin Vennemann', 'Untouched attribute is still correct in database');
+              t.ok(
+                _.isArray(record.books) && record.books.length === 0,
+               'Updated relationship is persisted in database'
+             );
+            } catch (err) {
+              t.fail(err);
+            }
+            t.end();
+          });
+        } catch (err) {
+          t.fail(err);
+        }
+      });
+    });
+  });
+});
+
+test('Updating a resource: to-many relationship (replace)', function (t) {
+  t.plan(7);
+
+  Author.create({
+    name: 'Kevin Vennemann'
+  }).exec(function (err, author) {
+    if (err) {
+      t.fail();
+    }
+
+    Book.create({
+      title : 'Nahe Jedenew',
+      author: [author.id]
+    }).exec(function (err, book) {
+      if (err) {
+        t.fail();
+      }
+
+      sails.request({
+        url   : '/author/' + author.id,
+        method: 'PATCH',
+        data  : {
+          data: {
+            type         : 'authors',
+            id           : author.id,
+            relationships: {
+              books: {
+                data: [{
+                  type: 'books',
+                  id  : 1
+                }]
+              }
+            }
+          }
+        }
+      }, function (err, res, body) {
+        if (err) {
+          t.fail(err);
+        }
+        // response
+        try {
+          t.equal(res.statusCode, 200, 'HTTP status code is 200 Ok');
+          t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+          t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+          t.equal(body.data.attributes['name'], 'Kevin Vennemann', 'Untouched attribute is correct in response');
+          t.deepEqual(body.data.relationships.books.data, [{ type: 'books', id: '1' }], 'Updated relationship is correct in response');
+        } catch (err) {
+          t.fail(err);
+        }
+        // persistence in database
+        try {
+          Author.findOne(author.id).populate('books').exec(function (err, record) {
+            if (err) {
+              t.fail(err);
+            }
+            try {
+              t.equal(record.name, 'Kevin Vennemann', 'Untouched attribute is still correct in database');
+              t.equal(record.books[0].id, 1, 'Updated relationship is persisted in database');
+            } catch (err) {
+              t.fail(err);
+            }
+            t.end();
+          });
+        } catch (err) {
+          t.fail(err);
+        }
+      });
+    });
+  });
+});
+
+test('Updating a resource: to-many relationship (not changed)', function (t) {
+  t.plan(6);
+
+  Author.create({
+    name: 'Johannes Holzmann'
+  }).exec(function (err, author) {
+    if (err) {
+      t.fail();
+    }
+
+    Book.create({
+      title : 'Die goldene Käthe',
+      author: [author.id]
+    }).exec(function (err, book) {
+      if (err) {
+        t.fail();
+      }
+
+      sails.request({
+        url   : '/author/' + author.id,
+        method: 'PATCH',
+        data  : {
+          data: {
+            type      : 'authors',
+            id        : author.id,
+            attributes: {
+              name: 'Senna Hoy'
+            }
+          }
+        }
+      }, function (err, res, body) {
+        if (err) {
+          t.fail(err);
+        }
+        // response
+        try {
+          t.equal(res.statusCode, 200, 'HTTP status code is 200 Ok');
+          t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+          t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+          t.equal(body.data.attributes['name'], 'Senna Hoy', 'Updated attribute is correct in response');
+          // Relationship must be present in response. Since fetchting relationship and
+          // including related links isn't supported yet, we normally include relationships
+          // as resource linkage. But since we didn't know IDs of related records this
+          // is not possible...
+          //
+          // t.deepEqual(body.data.relationships.books.data, [{ type: 'books', id: book.id.toString() }], 'Untouched relationship is correct in response');
+        } catch (err) {
+          t.fail(err);
+        }
+        // persistence in database
+        try {
+          Author.findOne(author.id).populate('books').exec(function (err, record) {
+            if (err) {
+              t.fail(err);
+            }
+            try {
+              t.equal(record.name, 'Senna Hoy', 'Updated attribute is persisted in database');
+              t.equal(record.books[0].id, book.id, 'Untouched relationship is correct in database');
+            } catch (err) {
+              t.fail(err);
+            }
+            t.end();
+          });
+        } catch (err) {
+          t.fail(err);
+        }
+      });
+    });
+  });
+});
+
 test('Bootstrap: Fetching record: teardown', function (t) {
   sails.lower(function () {
     t.end();

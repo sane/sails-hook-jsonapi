@@ -29,7 +29,7 @@
     "url": "https://github.com/IanVS/sails-hook-jsonapi"
   },
   "dependencies": {
-    "jsonapi-serializer": "^3.2.0",
+    "jsonapi-serializer": "^3.3.0",
     "lodash": "^4.5.0",
     "pluralize": "^1.1.2",
     "sails-build-dictionary": "^0.10.1"

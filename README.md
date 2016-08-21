@@ -42,7 +42,6 @@ This is unfinished. So far, the following are not yet implemented:
     - [ ] Non-dasherized attributes
   - [ ] Sparse fieldsets
 - [ ] Fetching relationships
-- [ ] Updating resources
 - [ ] Updating relationships
 - [ ] Deleting relationships
 
