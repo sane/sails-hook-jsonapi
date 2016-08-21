@@ -70,7 +70,7 @@ test('Bootstrap: Author model and fixture is loaded correctly', function (t) {
   });
 });
 
-test('Book model and fixture is loaded correctly', function (t) {
+test('Bootstrap: Book model and fixture is loaded correctly', function (t) {
   t.plan(3);
 
   Book.find().exec(function (err, books) {
@@ -424,6 +424,156 @@ test('Fetching records: not found response is correct', function (t) {
     try {
       t.equal(err.status, 404, 'HTTP status code is 404');
       t.ok(err.body === undefined, 'Body is empty');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Fetching single resource: simple', function (t) {
+  t.plan(9);
+
+  sails.request({
+    url   : '/user/1',
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.ok(body.data, 'Body contains a "data" property');
+      t.equal(body.data.id, '1', '"data" contains correct "id".');
+      t.equal(body.data.type, 'users', '"data" contains correct "type".');
+      t.ok(body.data.attributes, '"data" contains an "attributes" property');
+      t.ok(body.data.attributes['first-name'], '"attributes" contains a "first-name" property');
+      t.equal(body.data.attributes['first-name'], 'Peter', '"first-name" of the first model is "Peter"');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Fetching single resource: to-one relationship', function (t) {
+  t.plan(20);
+
+  sails.config.jsonapi.compoundDoc = true;
+
+  sails.request({
+    url   : '/book/1',
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.ok(body.data, 'Body contains a "data" property');
+      t.equal(body.data.id, '1', '"data" contains correct "id".');
+      t.equal(body.data.type, 'books', '"data" contains correct "type".');
+      t.ok(body.data.attributes, '"data" contains an "attributes" property');
+      t.ok(body.data.attributes['title'], '"attributes" contains a "title" property');
+      t.equal(body.data.attributes['title'], 'A Game of Thrones', '"title" of the first book model is "A Game of Thrones"');
+      t.ok(
+        typeof body.data.relationships.author.data === 'object' && !_.isArray(body.data.relationships.author.data),
+        'Relationship value is an object for one-to relationship'
+      );
+      t.deepEqual(body.data.relationships.author.data, { type: 'authors', id: '1' }, 'Relationship data is an resource linkage as default');
+      t.ok(body.included, 'Body contains an "included" property');
+      t.equal(body.included.length, 1, 'Three books are included');
+      t.ok(body.included[0].type, '"included" contains a "type" property');
+      t.equal(body.included[0].type, 'authors', '"type" of included is "authors"');
+      t.ok(body.included[0].id, 'Included data includes an "id" property');
+      t.equal(body.included[0].id, '1', '"id" of included resource is "1"');
+      t.ok(body.included[0].attributes, 'Included data includes an "attributes" property');
+      t.equal(typeof body.included[0].attributes, 'object', '"attributes" is an object');
+      t.equal(body.included[0].attributes.name, 'George R. R. Martin', 'Name of author is "A Game of Thrones"');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Fetching single resource: many-to relationship', function (t) {
+  t.plan(21);
+
+  sails.config.jsonapi.compoundDoc = true;
+
+  sails.request({
+    url   : '/author/2',
+    method: 'GET',
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.ok(body.data, 'Body contains a "data" property');
+      t.equal(body.data.id, '2', '"data" contains correct "id".');
+      t.equal(body.data.type, 'authors', '"data" contains correct "type".');
+      t.ok(body.data.attributes, '"data" contains an "attributes" property');
+      t.ok(body.data.attributes['name'], '"attributes" contains a "name" property');
+      t.equal(body.data.attributes['name'], 'Orson Scott Card', '"name" of the first author model is "Orson Scott Card"');
+      t.ok(body.data.relationships, 'Resource object has relationships object');
+      t.ok(_.isArray(body.data.relationships.books.data), 'Relationship value is an array for many-to relationship');
+      t.deepEqual(
+        body.data.relationships.books.data,
+        [{ type: 'books', id: '2' }, {type: 'books', id: '3'}],
+        'Relationship data is a resource linkage'
+      );
+      t.ok(body.included, 'Body contains an "included" property');
+      t.equal(body.included.length, 2, 'Three books are included');
+      t.ok(body.included[0].type, '"included" contains a "type" property');
+      t.equal(body.included[0].type, 'books', '"type" of included is "books"');
+      t.ok(body.included[0].id, 'Included data includes an "id" property');
+      t.equal(body.included[0].id, '2', '"id" of first included resource is "2"');
+      t.ok(body.included[0].attributes, 'Included data includes an "attributes" property');
+      t.equal(typeof body.included[0].attributes, 'object', '"attributes" is an object');
+      t.equal(body.included[0].attributes.title, 'Ender\'s Game', 'Title of first book is "Ender\'s Game"');
+    } catch (err) {
+      t.fail(err);
+    }
+    t.end();
+  });
+});
+
+test('Fetching single resource: to-one relationship does not include related resource if `compoundDoc` is `false`', function (t) {
+  t.plan(12);
+
+  sails.config.jsonapi.compoundDoc = false;
+
+  sails.request({
+    url   : '/book/1',
+    method: 'GET'
+  }, function (err, res, body) {
+    if (err) {
+      t.fail(err);
+    }
+    try {
+      t.equal(res.statusCode, 200, 'HTTP status code is 200');
+      t.equal(res.headers['Content-Type'], 'application/vnd.api+json', 'Sends jsonapi mime type');
+      t.ok(validateJsonApi(body), 'Body is a valid JSON API');
+      t.ok(body.data, 'Body contains a "data" property');
+      t.equal(body.data.id, '1', '"data" contains correct "id".');
+      t.equal(body.data.type, 'books', '"data" contains correct "type".');
+      t.ok(body.data.attributes, '"data" contains an "attributes" property');
+      t.ok(body.data.attributes['title'], '"attributes" contains a "title" property');
+      t.equal(body.data.attributes['title'], 'A Game of Thrones', '"title" of the first book model is "A Game of Thrones"');
+      t.ok(
+        typeof body.data.relationships.author.data === 'object' && !_.isArray(body.data.relationships.author.data),
+        'Relationship value is an object for one-to relationship'
+      );
+      t.deepEqual(body.data.relationships.author.data, { type: 'authors', id: '1' }, 'Relationship data is an resource linkage as default');
+      t.notOk(body.included, 'Body does not contain an "included" property');
     } catch (err) {
       t.fail(err);
     }
