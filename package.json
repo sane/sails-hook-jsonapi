@@ -29,11 +29,7 @@
     "url": "https://github.com/IanVS/sails-hook-jsonapi"
   },
   "dependencies": {
-<<<<<<< HEAD
-
-=======
->>>>>>> Created a serialaze 'generic' method.
-    "jsonapi-serializer": "^3.2.1",
+    "jsonapi-serializer": "^3.3.0",
     "lodash": "^4.13.1",
     "pluralize": "^1.2.1",
     "sails-build-dictionary": "^0.10.1"
