@@ -18,12 +18,19 @@ This is a [Sails JS](http://sailsjs.org) hook for creating an API which conforms
 
 Just lift your app as normal, and your api responses will be formatted in accordance with [jsonapi.org](http://jsonapi.org/format/).
 
+If you need to serialize data for other reasons (eg. send data trough sockets), you can use the serializeData method like this `serializedData = sails.hooks.jsonapi.serializeData(model,data);`.
+This method takes 2 arguments
+* *model:* The name of the model that you wish to serialize ('model' must be defined on the sails models).
+* *data:* The data to be serialized.
+
 #### Options
 Create a `jsonapi.js` file inside the `config/` directory of your app, and you can set the following options:
 
 | Option        | Default   |  Description  |
 |---------------|:---------:|---------------|
 | `compoundDoc` |  `true`   | When set to 'true' (default), response will be a [compound document](http://jsonapi.org/format/#document-compound-documents) including related resources. |
+| `keyForAttribute` |  `dash-case`   | A function or string to customize attributes. Functions are passed the attribute as a single argument and expect a string to be returned. Strings are aliases for inbuilt functions for common case conversions. Options include: dash-case (default), lisp-case, spinal-case, kebab-case, underscore_case, snake_case, camelCase, CamelCase. |
+| `pluralizeType` |  `true`   | When set to 'true' (default), the type is pluralized. |
 
 ### Known Limitations
 

@@ -30,8 +30,8 @@
   },
   "dependencies": {
     "jsonapi-serializer": "^3.3.0",
-    "lodash": "^4.5.0",
-    "pluralize": "^1.1.2",
+    "lodash": "^4.13.1",
+    "pluralize": "^1.2.1",
     "sails-build-dictionary": "^0.10.1"
   },
   "devDependencies": {
